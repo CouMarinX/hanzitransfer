@@ -9,6 +9,12 @@ description = "HanZi style transfer utilities"
 readme = "README.md"
 requires-python = ">=3.8"
 authors = [{name = "Unknown"}]
+dependencies = [
+    "tensorflow",
+    "Pillow",
+    "hanzi_chaizi",
+    "fontTools"
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
