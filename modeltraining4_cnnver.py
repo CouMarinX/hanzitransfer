@@ -7,12 +7,13 @@ from tensorflow.keras.optimizers import Adam
 import ast
 
 # 文件路径
-input_file = "output/base_character1.txt"
-output_file = "output/new_character1.txt"
+base_files = ["output/base_character1.txt", "output/synth_base.txt"]
+target_files = ["output/new_character1.txt", "output/synth_target.txt"]
 
 # 检查文件是否存在
-if not os.path.exists(input_file) or not os.path.exists(output_file):
-    raise FileNotFoundError("输入或输出文件未找到，请确认路径是否正确！")
+for path in base_files + target_files:
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"数据文件未找到: {path}")
 
 # 加载数据
 def load_data(file_path):
@@ -22,8 +23,8 @@ def load_data(file_path):
         data = np.array(data_list, dtype=np.float32)
     return data
 
-input_data = load_data(input_file)
-output_data = load_data(output_file)
+input_data = np.concatenate([load_data(f) for f in base_files], axis=0)
+output_data = np.concatenate([load_data(f) for f in target_files], axis=0)
 
 # 检查数据维度
 if input_data.shape[1:] != (64, 64) or output_data.shape[1:] != (64, 64):
