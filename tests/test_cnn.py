@@ -1,6 +1,8 @@
 import os
-import numpy as np
 import pytest
+
+np = pytest.importorskip("numpy")
+tf = pytest.importorskip("tensorflow")
 
 from hanzitransfer.models.cnn import build_cnn, train_cnn
 

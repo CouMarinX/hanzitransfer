@@ -1,4 +1,7 @@
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy")
+pytest.importorskip("PIL")
 
 from hanzitransfer.inference.renderer import render_strokes
 

@@ -1,4 +1,8 @@
-import numpy as np
+import pytest
+
+np = pytest.importorskip("numpy")
+pytest.importorskip("PIL")
+pytest.importorskip("hanzi_chaizi")
 
 from hanzitransfer.data.generator import generate_dataset
 
