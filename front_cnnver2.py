@@ -3,8 +3,15 @@ from tkinter import messagebox
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import numpy as np
 import tensorflow as tf
-import win32clipboard
 from io import BytesIO
+import json
+
+try:
+    import win32clipboard  # type: ignore
+except Exception:
+    win32clipboard = None
+
+from renderer import render_strokes
 
 # 加载模型
 try:
@@ -45,12 +52,24 @@ def process_hanzi():
 
     # 使用模型进行预测
     output_data = model.predict(input_data)
-    output_data = np.squeeze(output_data, axis=-1)
 
-    # 将输出数组转为图片并拼接
+    # 将输出数组或笔画序列转为图片并拼接
     images = []
-    for arr in output_data:
-        img = Image.fromarray((arr * 255).astype(np.uint8))
+    for pred in output_data:
+        img = None
+        if isinstance(pred, (list, tuple)):
+            img = render_strokes(pred)
+        else:
+            try:
+                strokes = json.loads(pred)
+                img = render_strokes(strokes)
+            except Exception:
+                arr = np.array(pred)
+                if arr.ndim == 1:
+                    arr = arr.reshape(64, 64)
+                elif arr.ndim == 3:
+                    arr = arr.squeeze(-1)
+                img = Image.fromarray((arr * 255).astype(np.uint8))
         images.append(img)
 
     # 拼接图片
@@ -72,6 +91,9 @@ def process_hanzi():
 def copy_to_clipboard():
     if total_image is None:
         messagebox.showwarning("警告", "没有图片可复制！")
+        return
+    if win32clipboard is None:
+        messagebox.showwarning("警告", "当前环境不支持剪贴板复制")
         return
 
     output = BytesIO()
