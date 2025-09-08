@@ -56,8 +56,9 @@ python -m hanzitransfer.ui.front_cnnver2
 
 ## Testing
 
-Run unit tests with:
+Install the package and run the test suite with:
 
 ```bash
+pip install -e .[test]  # or ensure dependencies are installed
 pytest
 ```
