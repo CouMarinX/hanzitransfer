@@ -7,13 +7,13 @@ from pathlib import Path
 from typing import Iterable, List, Tuple
 
 import torch
-from PIL import Image
 from torchvision.utils import make_grid, save_image
 
-from .datasets import LAYOUTS, LAYOUT_TO_INDEX
+from .datasets import LAYOUT_TO_INDEX, LAYOUTS
 from .ids import render_char
 from .metrics import chamfer_dt, containment_at
 from .models.cond_unet import CondUNet
+from .sampling import guided_projected_sampling
 from .vectorize import save_svg, vectorize
 
 
@@ -25,6 +25,9 @@ def generate(
     noise: float,
     img_size: int = 128,
     device: str = "cpu",
+    guide_lambda: float = 3.0,
+    proj_every: int = 0,
+    tau: float = 0.5,
 ) -> Tuple[List[torch.Tensor], torch.Tensor]:
     """Generate ``num`` samples and return them along with base tensor."""
 
@@ -43,9 +46,22 @@ def generate(
 
     results: List[torch.Tensor] = []
     for _ in range(num):
-        with torch.no_grad():
-            y = model(x, noise=noise).cpu()
-        results.append(y)
+        if proj_every > 0:
+            y, _ = guided_projected_sampling(
+                model,
+                x.to(device_t),
+                base_tensor,
+                layout,
+                steps=1,
+                guide_lambda=guide_lambda,
+                proj_every=proj_every,
+                tau=tau,
+            )
+            results.append(y.cpu())
+        else:
+            with torch.no_grad():
+                y = model(x, noise=noise).cpu()
+            results.append(y)
     return results, base_tensor
 
 
@@ -58,6 +74,9 @@ def main(argv: Iterable[str] | None = None) -> None:
     parser.add_argument("--ckpt", required=True)
     parser.add_argument("--outdir", default="output/fusion/samples")
     parser.add_argument("--export-svg", action="store_true")
+    parser.add_argument("--guide-lambda", type=float, default=3.0)
+    parser.add_argument("--proj-every", type=int, default=0)
+    parser.add_argument("--tau", type=float, default=0.5)
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     outs, base_tensor = generate(
@@ -66,6 +85,9 @@ def main(argv: Iterable[str] | None = None) -> None:
         num=args.num,
         ckpt=args.ckpt,
         noise=args.noise,
+        guide_lambda=args.guide_lambda,
+        proj_every=args.proj_every,
+        tau=args.tau,
     )
 
     outdir = Path(args.outdir)

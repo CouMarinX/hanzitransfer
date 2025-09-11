@@ -7,20 +7,22 @@ from pathlib import Path
 from typing import Iterable
 
 import numpy as np
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
+from PIL import ImageFont as PILImageFont
 
 LAYOUTS = ["⿰", "⿱", "⿴"]
 
 
 def render_char(ch: str, size: int = 128) -> np.ndarray:
     """Render a character to a grayscale numpy array."""
+    font: PILImageFont.ImageFont
     try:
-        font = ImageFont.truetype("NotoSansCJK-Regular.ttc", size)
+        font = PILImageFont.truetype("NotoSansCJK-Regular.ttc", size)
     except Exception:  # pragma: no cover - font fallback
         try:
-            font = ImageFont.truetype("DejaVuSans.ttf", size)
+            font = PILImageFont.truetype("DejaVuSans.ttf", size)
         except Exception:
-            font = ImageFont.load_default()
+            font = PILImageFont.load_default()
     img = Image.new("L", (size, size), color=255)
     draw = ImageDraw.Draw(img)
     draw.text((0, 0), ch, font=font, fill=0)
