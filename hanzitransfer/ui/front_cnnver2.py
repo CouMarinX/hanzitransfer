@@ -1,7 +1,7 @@
 """Tkinter-based user interface for Hanzi style transfer."""
 
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
 from PIL import Image, ImageDraw, ImageFont, ImageTk
 import numpy as np
 from io import BytesIO
@@ -13,6 +13,7 @@ except Exception:
     win32clipboard = None
 
 from ..inference import load_cnn_model, render_strokes
+from .fusion_tab import FusionTab
 
 # 运行时加载模型
 model = None
@@ -127,9 +128,14 @@ def main() -> None:
     root.title("汉字转换器")
     root.geometry("600x200")  # 默认窗口大小
 
+    notebook = ttk.Notebook(root)
+    notebook.pack(fill="both", expand=True)
+
     # 主布局
-    main_frame = tk.Frame(root, bg="#ffffff")
-    main_frame.pack(fill="both", expand=True, padx=10, pady=10)
+    main_frame = tk.Frame(notebook, bg="#ffffff")
+    notebook.add(main_frame, text="转换")
+    fusion = FusionTab(notebook)
+    notebook.add(fusion.frame, text="融合")
 
     # 左侧输入框区域
     text_frame = tk.Frame(main_frame, bg="#ffffff")
