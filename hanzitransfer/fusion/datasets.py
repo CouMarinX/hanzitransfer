@@ -41,7 +41,7 @@ class PairsDataset(Dataset):
         data = _load_file(path)
         dt_base = torch.from_numpy(data["dt_base"]).float()
         img_target = torch.from_numpy(data["img_target"]).float()
-        layout = data.get("layout", "⿰")
+        layout = str(data.get("layout", "⿰"))
         layout_idx = LAYOUT_TO_INDEX.get(layout, 0)
         layout_onehot = torch.zeros(len(LAYOUTS), *dt_base.shape[1:])
         layout_onehot[layout_idx] = 1.0
