@@ -10,6 +10,7 @@ Tkinter GUI for style transfer experiments.
 - `hanzitransfer/models` – CNN and CVAE models and training scripts.
 - `hanzitransfer/inference` – model loading helpers and stroke renderers.
 - `hanzitransfer/ui` – graphical interface built with Tkinter.
+- `hanzitransfer/fusion` – experimental "基字融合" pipeline.
 - `output` – default location for generated data and trained models.
 - `tests` – unit tests.
 
@@ -53,6 +54,33 @@ or
 ```bash
 python -m hanzitransfer.ui.front_cnnver2
 ```
+
+This GUI now includes a **Fusion (基字融合)** tab for generating new
+characters conditioned on a base glyph.
+
+## Fusion (基字融合)
+
+Build a tiny demo dataset:
+
+```bash
+python scripts/build_pairs.py --out output/fusion/demo_pairs
+```
+
+Train the conditional UNet:
+
+```bash
+hanzi-fuse-train --data_root output/fusion/demo_pairs --epochs 5 --img_size 128
+```
+
+Run inference:
+
+```bash
+hanzi-fuse --base 木 --layout ⿰ --num 4 --ckpt output/fusion/checkpoints/hanzi_fusion_unet.pt
+```
+
+The command writes individual samples and a `grid.png` to the output directory
+and prints containment and Chamfer metrics. The Tkinter UI's **Fusion** tab can
+also be used to generate candidates from the trained checkpoint.
 
 ## Testing
 

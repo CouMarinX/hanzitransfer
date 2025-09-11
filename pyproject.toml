@@ -13,7 +13,13 @@ dependencies = [
     "tensorflow",
     "Pillow",
     "hanzi_chaizi",
-    "fontTools"
+    "fontTools",
+    "torch",
+    "torchvision",
+    "numpy",
+    "scipy",
+    "opencv-python-headless",
+    "tqdm"
 ]
 
 [tool.setuptools.packages.find]
@@ -23,3 +29,9 @@ include = ["hanzitransfer"]
 [project.scripts]
 hanzi-ui = "hanzitransfer.ui.front_cnnver2:main"
 cvae-infer = "hanzitransfer.inference.cvae_inference:main"
+hanzi-fuse-train = "hanzitransfer.fusion.train_fusion:main"
+hanzi-fuse = "hanzitransfer.fusion.infer_fusion:main"
+hanzi-ids = "hanzitransfer.fusion.ids:main"
+
+[project.optional-dependencies]
+dev = ["pytest", "torch", "torchvision"]
