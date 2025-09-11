@@ -4,14 +4,13 @@ from __future__ import annotations
 
 import tkinter as tk
 from pathlib import Path
+from tkinter import filedialog, messagebox
 from typing import List
 
 from PIL import ImageTk
 
 from ..fusion import metrics
 from ..fusion.infer_fusion import generate
-
-DEFAULT_CKPT = "output/fusion/checkpoints/hanzi_fusion_unet.pt"
 
 
 class FusionTab:
@@ -30,6 +29,11 @@ class FusionTab:
         layout_menu.grid(row=0, column=1, padx=5, pady=5)
         btn = tk.Button(self.frame, text="Generate 4", command=self.generate)
         btn.grid(row=0, column=2, padx=5, pady=5)
+        ckpt_btn = tk.Button(
+            self.frame, text="Choose Checkpoint", command=self.choose_ckpt
+        )
+        ckpt_btn.grid(row=0, column=3, padx=5, pady=5)
+        self.ckpt_var = tk.StringVar(value="")
         self.labels: List[tk.Label] = []
         self.metric_labels: List[tk.Label] = []
         for i in range(4):
@@ -48,10 +52,14 @@ class FusionTab:
         layout = self.layout_var.get()
         if layout == "auto":
             layout = "⿰"
+        ckpt = self.ckpt_var.get()
+        if not ckpt:
+            messagebox.showwarning("Checkpoint", "Please choose a checkpoint")
+            return
         try:
-            outs, base_tensor = generate(base, layout, 4, DEFAULT_CKPT, noise=0.0)
+            outs, base_tensor = generate(base, layout, 4, ckpt, noise=0.0)
         except Exception as e:  # pragma: no cover - UI feedback
-            print(f"Generation failed: {e}")
+            messagebox.showerror("Generation failed", str(e))
             return
         self.images.clear()
         for i, img in enumerate(outs):
@@ -60,17 +68,24 @@ class FusionTab:
             pil_img = Image.fromarray((img.squeeze().numpy() * 255).astype("uint8"))
             photo = ImageTk.PhotoImage(pil_img, master=self.frame)
             self.labels[i].config(image=photo)
-            self.labels[i].image = photo
+            self.labels[i].image = photo  # type: ignore[attr-defined]
             self.images.append(photo)
             contain = metrics.containment_at(img, base_tensor)
             self.metric_labels[i].config(text=f"{contain:.2f}")
         self.selected = 0
+
+    def choose_ckpt(self) -> None:
+        path = filedialog.askopenfilename(
+            title="Select checkpoint", filetypes=[("PyTorch", "*.pt"), ("All", "*.*")]
+        )
+        if path:
+            self.ckpt_var.set(path)
 
     def save_best(self) -> None:
         if not self.images:
             return
         outdir = Path("output/fusion/ui")
         outdir.mkdir(parents=True, exist_ok=True)
-        img = self.labels[getattr(self, "selected", 0)].image
+        img = self.labels[getattr(self, "selected", 0)].image  # type: ignore[attr-defined]
         img._PhotoImage__photo.write(str(outdir / "best.png"))
 

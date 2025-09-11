@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
@@ -47,5 +47,9 @@ class PairsDataset(Dataset):
         layout_onehot[layout_idx] = 1.0
         x = torch.cat([dt_base, layout_onehot], dim=0)
         y = img_target
-        meta = {"base_char": data.get("base_char", ""), "target_char": data.get("target_char", ""), "layout": layout}
+        meta = {
+            "base_char": str(data.get("base_char", "")),
+            "target_char": str(data.get("target_char", "")),
+            "layout": str(layout),
+        }
         return x, y, meta

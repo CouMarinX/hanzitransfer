@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import Iterable
+from typing import Dict, Iterable, List, Optional, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -15,9 +15,9 @@ from .losses import contain_loss, edge_sharpness
 from .models.cond_unet import CondUNet
 
 try:  # pragma: no cover - tensorboard may be unavailable
-    from torch.utils.tensorboard import SummaryWriter
+    from torch.utils.tensorboard import SummaryWriter as TBWriter
 except Exception:  # pragma: no cover
-    SummaryWriter = None
+    TBWriter = None  # type: ignore[misc]
 
 
 def train(
@@ -32,11 +32,18 @@ def train(
 ) -> Path:
     torch.manual_seed(seed)
     dataset = PairsDataset(data_root)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    def _collate(batch: List[Tuple[torch.Tensor, torch.Tensor, Dict[str, str]]]):
+        xs, ys, metas = zip(*batch)
+        return torch.stack(xs), torch.stack(ys), list(metas)
+
+    loader = DataLoader(
+        dataset, batch_size=batch_size, shuffle=True, collate_fn=_collate
+    )
     device = torch.device("cpu")
     model = CondUNet(in_channels=1 + len(LAYOUTS)).to(device)
     optim = torch.optim.Adam(model.parameters(), lr=lr)
-    writer = SummaryWriter(log_dir=save_dir) if SummaryWriter else None
+    writer: Optional[TBWriter] = TBWriter(log_dir=save_dir) if TBWriter is not None else None
     best_loss = float("inf")
     save_path = Path(save_dir) / "hanzi_fusion_unet.pt"
     Path(save_dir).mkdir(parents=True, exist_ok=True)
@@ -56,12 +63,12 @@ def train(
             optim.step()
             total += loss.item()
         avg = total / max(1, len(loader))
-        if writer:
+        if writer is not None:
             writer.add_scalar("loss", avg, epoch)
         if avg < best_loss:
             best_loss = avg
             torch.save(model.state_dict(), save_path)
-    if writer:
+    if writer is not None:
         writer.close()
     return save_path
 

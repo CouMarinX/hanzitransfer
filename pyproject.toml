@@ -28,7 +28,19 @@ include = ["hanzitransfer"]
 [project.scripts]
 hanzi-fuse-train = "hanzitransfer.fusion.train_fusion:main"
 hanzi-fuse = "hanzitransfer.fusion.infer_fusion:main"
-hanzi-ids = "hanzitransfer.fusion.ids:main"
+hanzi-ids = "hanzitransfer.fusion.ids_grammar:main"
 
 [project.optional-dependencies]
-dev = ["pytest", "torch", "torchvision"]
+dev = ["ruff", "mypy", "pytest", "tensorboard"]
+
+[tool.ruff]
+select = ["E", "F", "I"]
+extend-exclude = ["output/"]
+per-file-ignores = {"tests/*.py" = ["E402"]}
+line-length = 120
+
+[tool.mypy]
+ignore_missing_imports = true
+python_version = "3.10"
+exclude = ["hanzitransfer/fusion/ids.py"]
+follow_imports = "skip"
