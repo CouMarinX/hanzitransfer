@@ -13,6 +13,10 @@ from .losses import chamfer_distance
 def containment_at(pred: torch.Tensor, base: torch.Tensor, tau: float = 0.5) -> float:
     """Fraction of base pixels covered by ``pred`` above threshold ``tau``."""
 
+    if base.shape[-2:] != pred.shape[-2:]:
+        base = torch.nn.functional.interpolate(
+            base.float(), size=pred.shape[-2:], mode="nearest"
+        )
     base_mask = base > 0.5
     pred_mask = pred > tau
     if base_mask.sum() == 0:  # pragma: no cover - degenerate
@@ -21,6 +25,10 @@ def containment_at(pred: torch.Tensor, base: torch.Tensor, tau: float = 0.5) -> 
 
 
 def chamfer_dt(pred: torch.Tensor, base: torch.Tensor) -> float:
+    if base.shape[-2:] != pred.shape[-2:]:
+        base = torch.nn.functional.interpolate(
+            base.float(), size=pred.shape[-2:], mode="nearest"
+        )
     return float(chamfer_distance(base, pred))
 
 

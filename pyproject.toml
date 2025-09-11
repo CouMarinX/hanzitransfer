@@ -10,7 +10,6 @@ readme = "README.md"
 requires-python = ">=3.8"
 authors = [{name = "Unknown"}]
 dependencies = [
-    "tensorflow",
     "Pillow",
     "hanzi_chaizi",
     "fontTools",
@@ -27,8 +26,6 @@ where = ["."]
 include = ["hanzitransfer"]
 
 [project.scripts]
-hanzi-ui = "hanzitransfer.ui.front_cnnver2:main"
-cvae-infer = "hanzitransfer.inference.cvae_inference:main"
 hanzi-fuse-train = "hanzitransfer.fusion.train_fusion:main"
 hanzi-fuse = "hanzitransfer.fusion.infer_fusion:main"
 hanzi-ids = "hanzitransfer.fusion.ids:main"
