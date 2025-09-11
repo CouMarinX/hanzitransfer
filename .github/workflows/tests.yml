@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 on:
   push:
@@ -12,10 +12,10 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
-      - name: Install dependencies
+          python-version: "3.11"
+      - name: Install project with dev dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install numpy Pillow hanzi_chaizi fontTools pytest
+          pip install -e .[dev]
       - name: Run tests
-        run: pytest
+        run: pytest -q
