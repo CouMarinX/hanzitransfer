@@ -3,6 +3,16 @@
 HanziTransfer provides utilities for synthesizing Chinese character images via
 an experimental "基字融合" pipeline built on PyTorch.
 
+## Installation
+
+Set up a virtual environment and install the project in editable mode:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
 ## Project structure
 
 - `hanzitransfer/fusion` – experimental "基字融合" pipeline.
